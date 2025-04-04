@@ -228,6 +228,26 @@ export const FOOTER_QUERY = `#graphql
     menu(handle: $footerMenuHandle) {
       ...Menu
     }
+    localization {
+      availableCountries {
+        name
+        isoCode
+        currency {
+          isoCode
+          name
+          symbol
+        }
+      }
+      country {
+        isoCode
+        name
+        currency {
+          isoCode
+          name
+          symbol
+        }
+      }
+    }
   }
   ${MENU_FRAGMENT}
 ` as const;
