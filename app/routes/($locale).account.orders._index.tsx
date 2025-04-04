@@ -1,4 +1,4 @@
-import {Link, useLoaderData, type MetaFunction} from '@remix-run/react';
+import {useLoaderData, type MetaFunction} from '@remix-run/react';
 import {
   Money,
   getPaginationVariables,
@@ -11,6 +11,7 @@ import type {
   OrderItemFragment,
 } from 'customer-accountapi.generated';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {Link} from '~/components/Link';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Orders'}];

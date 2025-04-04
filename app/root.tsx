@@ -82,6 +82,8 @@ export async function loader(args: LoaderFunctionArgs) {
       country: args.context.storefront.i18n.country,
       language: args.context.storefront.i18n.language,
     },
+    country: args.context.storefront.i18n.country,
+    language: args.context.storefront.i18n.language,
   };
 }
 

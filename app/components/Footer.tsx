@@ -1,6 +1,7 @@
 import {Suspense} from 'react';
-import {Await, NavLink} from '@remix-run/react';
+import {Await} from '@remix-run/react';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
+import {NavLink} from '~/components/Link';
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;

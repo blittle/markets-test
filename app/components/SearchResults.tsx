@@ -1,6 +1,6 @@
-import {Link} from '@remix-run/react';
 import {Image, Money, Pagination} from '@shopify/hydrogen';
 import {urlWithTrackingParams, type RegularSearchReturn} from '~/lib/search';
+import {Link} from '~/components/Link';
 
 type SearchItems = RegularSearchReturn['result']['items'];
 type PartialSearchResult<ItemType extends keyof SearchItems> = Pick<

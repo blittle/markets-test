@@ -1,4 +1,4 @@
-import {Link, useFetcher, type Fetcher} from '@remix-run/react';
+import {useFetcher, type Fetcher} from '@remix-run/react';
 import {Image, Money} from '@shopify/hydrogen';
 import React, {useRef, useEffect} from 'react';
 import {
@@ -7,6 +7,7 @@ import {
   type PredictiveSearchReturn,
 } from '~/lib/search';
 import {useAside} from './Aside';
+import {Link} from '~/components/Link';
 
 type PredictiveSearchItems = PredictiveSearchReturn['result']['items'];
 
