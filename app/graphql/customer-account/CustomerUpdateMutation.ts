@@ -13,6 +13,20 @@ export const CUSTOMER_UPDATE_MUTATION = `#graphql
         phoneNumber {
           phoneNumber
         }
+        companyContacts(first: 10) {
+          nodes {
+            company {
+              id
+              name
+              locations(first: 10) {
+                nodes {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
       }
       userErrors {
         code

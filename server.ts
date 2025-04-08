@@ -35,10 +35,15 @@ export default {
 
       const response = await handleRequest(request);
 
-      if (appLoadContext.session.isPending) {
+      if (
+        appLoadContext.session.isPending ||
+        appLoadContext.session.isDestroyed
+      ) {
         response.headers.set(
           'Set-Cookie',
-          await appLoadContext.session.commit(),
+          appLoadContext.session.isDestroyed
+            ? await appLoadContext.session.destroy()
+            : await appLoadContext.session.commit(),
         );
       }
 

@@ -12,6 +12,20 @@ export const CUSTOMER_FRAGMENT = `#graphql
         ...Address
       }
     }
+    companyContacts(first: 10) {
+      nodes {
+        company {
+          id
+          name
+          locations(first: 10) {
+            nodes {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
   }
   fragment Address on CustomerAddress {
     id

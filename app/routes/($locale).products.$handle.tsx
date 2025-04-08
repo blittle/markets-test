@@ -42,16 +42,27 @@ async function loadCriticalData({
   request,
 }: LoaderFunctionArgs) {
   const {handle} = params;
-  const {storefront} = context;
+  const {storefront, customerAccount} = context;
 
   if (!handle) {
     throw new Error('Expected product handle to be defined');
   }
 
+  const locationId = context.session.get('locationId') as string | undefined;
+  const buyer = await customerAccount.getBuyer();
+
   const [{product}] = await Promise.all([
-    storefront.query(PRODUCT_QUERY, {
-      variables: {handle, selectedOptions: getSelectedProductOptions(request)},
-    }),
+    storefront.query(
+      locationId && buyer ? BUYER_PRODUCT_QUERY : PRODUCT_QUERY,
+      {
+        variables: {
+          handle,
+          selectedOptions: getSelectedProductOptions(request),
+          companyLocationId: locationId ?? undefined,
+          token: buyer?.customerAccessToken ?? undefined,
+        },
+      },
+    ),
     // Add other queries here, so that they are loaded in parallel
   ]);
 
@@ -224,6 +235,25 @@ const PRODUCT_QUERY = `#graphql
     $language: LanguageCode
     $selectedOptions: [SelectedOptionInput!]!
   ) @inContext(country: $country, language: $language) {
+    product(handle: $handle) {
+      ...Product
+    }
+  }
+  ${PRODUCT_FRAGMENT}
+` as const;
+
+const BUYER_PRODUCT_QUERY = `#graphql
+  query Product(
+    $country: CountryCode
+    $handle: String!
+    $language: LanguageCode
+    $selectedOptions: [SelectedOptionInput!]!
+    $companyLocationId: ID
+    $token: String!
+  ) @inContext(country: $country, language: $language, buyer: {
+     companyLocationId: $companyLocationId
+     customerAccessToken: $token
+  }) {
     product(handle: $handle) {
       ...Product
     }

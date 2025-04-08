@@ -9,6 +9,7 @@ import {
 import {
   Form,
   useActionData,
+  useLoaderData,
   useNavigation,
   useOutletContext,
   type MetaFunction,
@@ -26,7 +27,10 @@ export const meta: MetaFunction = () => {
 export async function loader({context}: LoaderFunctionArgs) {
   await context.customerAccount.handleAuthStatus();
 
-  return {};
+  return data({
+    companyId: context.session.get('companyId'),
+    locationId: context.session.get('locationId'),
+  });
 }
 
 export async function action({request, context}: ActionFunctionArgs) {
@@ -39,6 +43,11 @@ export async function action({request, context}: ActionFunctionArgs) {
   const form = await request.formData();
 
   try {
+    const companyId = form.get('companyContactId');
+    const locationId = form.get('companyLocationId');
+    context.session.set('companyId', companyId);
+    context.session.set('locationId', locationId);
+
     const customer: CustomerUpdateInput = {};
     const validInputKeys = ['firstName', 'lastName'] as const;
     for (const [key, value] of form.entries()) {
@@ -51,27 +60,33 @@ export async function action({request, context}: ActionFunctionArgs) {
     }
 
     // update customer and possibly password
-    const {data, errors} = await customerAccount.mutate(
-      CUSTOMER_UPDATE_MUTATION,
-      {
-        variables: {
-          customer,
-        },
+    const response = await customerAccount.mutate(CUSTOMER_UPDATE_MUTATION, {
+      variables: {
+        customer,
       },
-    );
+    });
 
-    if (errors?.length) {
-      throw new Error(errors[0].message);
+    if (response.errors?.length) {
+      throw new Error(response.errors[0].message);
     }
 
-    if (!data?.customerUpdate?.customer) {
+    if (!response.data?.customerUpdate?.customer) {
       throw new Error('Customer profile update failed.');
     }
 
-    return {
-      error: null,
-      customer: data?.customerUpdate?.customer,
-    };
+    return data(
+      {
+        error: null,
+        customer: response.data?.customerUpdate?.customer,
+        companyId: context.session.get('companyId'),
+        locationId: context.session.get('locationId'),
+      },
+      {
+        headers: {
+          'Set-Cookie': await context.session.commit(),
+        },
+      },
+    );
   } catch (error: any) {
     return data(
       {error: error.message, customer: null},
@@ -84,6 +99,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 
 export default function AccountProfile() {
   const account = useOutletContext<{customer: CustomerFragment}>();
+  const {companyId, locationId} = useLoaderData<typeof loader>();
   const {state} = useNavigation();
   const action = useActionData<ActionResponse>();
   const customer = action?.customer ?? account?.customer;
@@ -118,16 +134,57 @@ export default function AccountProfile() {
             minLength={2}
           />
         </fieldset>
-        {action?.error ? (
-          <p>
-            <mark>
-              <small>{action.error}</small>
-            </mark>
-          </p>
-        ) : (
-          <br />
-        )}
-        <button type="submit" disabled={state !== 'idle'}>
+        <h2>Company</h2>
+        <div class="flex gap-4">
+          <select
+            name="companyContactId"
+            className="border border-gray-300 rounded-md p-2"
+          >
+            <option value="">No selected company</option>
+            {customer?.companyContacts?.nodes?.map((contact) => (
+              <option
+                key={contact.company.id}
+                value={contact.company.id}
+                selected={companyId === contact.company.id}
+              >
+                {contact.company.name}
+              </option>
+            ))}
+          </select>
+          <select
+            name="companyLocationId"
+            className="border border-gray-300 rounded-md p-2"
+          >
+            <option value="">No selected location</option>
+            {customer?.companyContacts?.nodes
+              ?.find((contact) => contact.company.id === companyId)
+              ?.company.locations.nodes.map((location) => (
+                <option
+                  key={location.id}
+                  value={location.id}
+                  selected={locationId === location.id}
+                >
+                  {location.name}
+                </option>
+              ))}
+          </select>
+        </div>
+        <div className="h-10 pt-2">
+          {action?.error ? (
+            <>
+              <p>
+                <mark>
+                  <small>{action.error}</small>
+                </mark>
+              </p>
+            </>
+          ) : null}
+        </div>
+        <button
+          type="submit"
+          disabled={state !== 'idle'}
+          className="bg-blue-500 text-white p-2 rounded-md"
+        >
           {state !== 'idle' ? 'Updating' : 'Update'}
         </button>
       </Form>

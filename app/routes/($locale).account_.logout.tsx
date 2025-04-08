@@ -6,5 +6,7 @@ export async function loader() {
 }
 
 export async function action({context}: ActionFunctionArgs) {
-  return context.customerAccount.logout();
+  const response = await context.customerAccount.logout();
+  response.headers.set('Set-Cookie', await context.session.destroy());
+  return response;
 }

@@ -13,8 +13,10 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader(args: LoaderFunctionArgs) {
+  const buyer = await args.context.customerAccount.getBuyer();
+
   // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
+  const deferredData = loadDeferredData(args, buyer);
 
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
@@ -42,9 +44,24 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: LoaderFunctionArgs) {
+function loadDeferredData(
+  {context}: LoaderFunctionArgs,
+  buyer: {customerAccessToken: string} | null,
+) {
+  const locationId = context.session.get('locationId') as string | undefined;
+
   const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
+    .query(
+      locationId && buyer
+        ? BUYER_RECOMMENDED_PRODUCTS_QUERY
+        : RECOMMENDED_PRODUCTS_QUERY,
+      {
+        variables: {
+          companyLocationId: locationId ?? undefined,
+          token: buyer?.customerAccessToken ?? undefined,
+        },
+      },
+    )
     .catch((error) => {
       // Log query errors, but don't throw them so the page can still render
       console.error(error);
@@ -174,6 +191,40 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
+    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
+      nodes {
+        ...RecommendedProduct
+      }
+    }
+  }
+` as const;
+
+const BUYER_RECOMMENDED_PRODUCTS_QUERY = `#graphql
+  fragment RecommendedProduct on Product {
+    id
+    title
+    handle
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    images(first: 1) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
+  }
+  query RecommendedProducts ($country: CountryCode, $language: LanguageCode, $companyLocationId: ID, $token: String!)
+    @inContext(country: $country, language: $language, buyer: {
+      companyLocationId: $companyLocationId
+      customerAccessToken: $token
+    }) {
     products(first: 4, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct

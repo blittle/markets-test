@@ -106,6 +106,19 @@ export type CustomerFragment = Pick<
       >
     >;
   };
+  companyContacts: {
+    nodes: Array<{
+      company?: CustomerAccountAPI.Maybe<
+        Pick<CustomerAccountAPI.Company, 'id' | 'name'> & {
+          locations: {
+            nodes: Array<
+              Pick<CustomerAccountAPI.CompanyLocation, 'id' | 'name'>
+            >;
+          };
+        }
+      >;
+    }>;
+  };
 };
 
 export type AddressFragment = Pick<
@@ -168,6 +181,19 @@ export type CustomerDetailsQuery = {
           | 'phoneNumber'
         >
       >;
+    };
+    companyContacts: {
+      nodes: Array<{
+        company?: CustomerAccountAPI.Maybe<
+          Pick<CustomerAccountAPI.Company, 'id' | 'name'> & {
+            locations: {
+              nodes: Array<
+                Pick<CustomerAccountAPI.CompanyLocation, 'id' | 'name'>
+              >;
+            };
+          }
+        >;
+      }>;
     };
   };
 };
@@ -458,6 +484,19 @@ export type CustomerUpdateMutation = {
         phoneNumber?: CustomerAccountAPI.Maybe<
           Pick<CustomerAccountAPI.CustomerPhoneNumber, 'phoneNumber'>
         >;
+        companyContacts: {
+          nodes: Array<{
+            company?: CustomerAccountAPI.Maybe<
+              Pick<CustomerAccountAPI.Company, 'id' | 'name'> & {
+                locations: {
+                  nodes: Array<
+                    Pick<CustomerAccountAPI.CompanyLocation, 'id' | 'name'>
+                  >;
+                };
+              }
+            >;
+          }>;
+        };
       }
     >;
     userErrors: Array<
@@ -470,7 +509,7 @@ export type CustomerUpdateMutation = {
 };
 
 interface GeneratedQueryTypes {
-  '#graphql\n  query CustomerDetails {\n    customer {\n      ...Customer\n    }\n  }\n  #graphql\n  fragment Customer on Customer {\n    id\n    firstName\n    lastName\n    defaultAddress {\n      ...Address\n    }\n    addresses(first: 6) {\n      nodes {\n        ...Address\n      }\n    }\n  }\n  fragment Address on CustomerAddress {\n    id\n    formatted\n    firstName\n    lastName\n    company\n    address1\n    address2\n    territoryCode\n    zoneCode\n    city\n    zip\n    phoneNumber\n  }\n\n': {
+  '#graphql\n  query CustomerDetails {\n    customer {\n      ...Customer\n    }\n  }\n  #graphql\n  fragment Customer on Customer {\n    id\n    firstName\n    lastName\n    defaultAddress {\n      ...Address\n    }\n    addresses(first: 6) {\n      nodes {\n        ...Address\n      }\n    }\n    companyContacts(first: 10) {\n      nodes {\n        company {\n          id\n          name\n          locations(first: 10) {\n            nodes {\n              id\n              name\n            }\n          }\n        }\n      }\n    }\n  }\n  fragment Address on CustomerAddress {\n    id\n    formatted\n    firstName\n    lastName\n    company\n    address1\n    address2\n    territoryCode\n    zoneCode\n    city\n    zip\n    phoneNumber\n  }\n\n': {
     return: CustomerDetailsQuery;
     variables: CustomerDetailsQueryVariables;
   };
@@ -497,7 +536,7 @@ interface GeneratedMutationTypes {
     return: CustomerAddressCreateMutation;
     variables: CustomerAddressCreateMutationVariables;
   };
-  '#graphql\n  # https://shopify.dev/docs/api/customer/latest/mutations/customerUpdate\n  mutation customerUpdate(\n    $customer: CustomerUpdateInput!\n  ){\n    customerUpdate(input: $customer) {\n      customer {\n        firstName\n        lastName\n        emailAddress {\n          emailAddress\n        }\n        phoneNumber {\n          phoneNumber\n        }\n      }\n      userErrors {\n        code\n        field\n        message\n      }\n    }\n  }\n': {
+  '#graphql\n  # https://shopify.dev/docs/api/customer/latest/mutations/customerUpdate\n  mutation customerUpdate(\n    $customer: CustomerUpdateInput!\n  ){\n    customerUpdate(input: $customer) {\n      customer {\n        firstName\n        lastName\n        emailAddress {\n          emailAddress\n        }\n        phoneNumber {\n          phoneNumber\n        }\n        companyContacts(first: 10) {\n          nodes {\n            company {\n              id\n              name\n              locations(first: 10) {\n                nodes {\n                  id\n                  name\n                }\n              }\n            }\n          }\n        }\n      }\n      userErrors {\n        code\n        field\n        message\n      }\n    }\n  }\n': {
     return: CustomerUpdateMutation;
     variables: CustomerUpdateMutationVariables;
   };

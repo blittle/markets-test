@@ -12,6 +12,7 @@ import {
  */
 export class AppSession implements HydrogenSession {
   public isPending = false;
+  public isDestroyed = false;
 
   #sessionStorage;
   #session;
@@ -62,6 +63,7 @@ export class AppSession implements HydrogenSession {
   }
 
   destroy() {
+    this.isDestroyed = true;
     return this.#sessionStorage.destroySession(this.#session);
   }
 
